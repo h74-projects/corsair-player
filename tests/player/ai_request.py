@@ -2,9 +2,9 @@ import openai
 import sys
 
 def generate_response(request):
-    openai.api_key = "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"
+    openai.api_key = "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"
 
-    request += "\n format the output as: Song_Name-Artists_Names"
+    request += "\n format the output as: Song_Name-Artists_Names-Year-Genre"
 
 
     response = openai.Completion.create(
