@@ -1,6 +1,9 @@
 #include "executer.hpp"
 #include "blocking_queue.hpp"
 #include <Poco/ThreadPool.h>
+#include "gpt_requests.hpp"
+#include "parser.hpp"
+#include "sql_mng.hpp"
 
 #include <iostream>
 
@@ -20,26 +23,39 @@ private:
 namespace m_player{
 
 
-void Executer::thread_pool(const std::vector<std::string>& a_songs, size_t a_therad_count) {
-    Poco::ThreadPool threadPool(a_therad_count);
 
-    // Create a blocking queue to hold the songs
+void Executer::multi_execute(std::string a_requset, std::string a_playlist_name, size_t a_therad_count) 
+{
+    m_player::GptRequest request;
+    std::string answer = request.generate_gpt_request(a_requset);
+
+    m_player::Parser parser;
+    std::vector<m_player::Song> songs; 
+    parser.parseSongs(answer, songs);
+
+    m_player::SqlMng sqlmng("my_db");
+    for(m_player::Song song : songs){
+        sqlmng.add_song_to_list( song);
+        //TODO -fix line just for compiling
+        if(a_playlist_name.empty()){}
+
+        parser.printSong(song);
+    }
     BlockingQueue<std::string> queue;
 
-    for (auto str : a_songs) {
-        queue.enqueue(str);
+    for (auto song : songs) {
+        queue.enqueue(song.get_song_name() + " " + song.get_artist_name());
     }
 
+    // Create a blocking queue to hold the songs
+    Poco::ThreadPool threadPool(a_therad_count);
+    //  Downloader dwn();
     auto workerFunction = [&queue]() {
         while (true) {
             std::string song;
             if (queue.dequeue(song)) {
                 std::cout << song  << std::endl;
-            //  Link link(song)
-            //  std::string url= link.get_link()
-            //  Downloader dwn(song, url);
-            //  dwn.download();
-
+            //  dwn.run(song, "../assets/songs");
             } else {
                 break; 
             }
