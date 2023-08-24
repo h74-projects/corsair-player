@@ -10,7 +10,7 @@ class Executer{
 public:
 Executer() = default;
 ~Executer() = default;
-void thread_pool(const std::vector<std::string>& a_songs, size_t a_therd_count);
+void multi_execute(std::string a_requset, std::string a_name, size_t a_therd_count);
 
 private:
 

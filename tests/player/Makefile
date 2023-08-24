@@ -23,7 +23,6 @@ CPPFLAGS = -I$(INCLUDES_DIR)
 OBJECTS = main.o \
 		$(SOURCES_DIR)/gpt_requests.o\
 		$(SOURCES_DIR)/sql_mng.o\
-		$(SOURCES_DIR)/music_search.o\
 		$(SOURCES_DIR)/song.o\
 		$(SOURCES_DIR)/parser.o\
 		$(SOURCES_DIR)/executer.o

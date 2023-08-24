@@ -2,72 +2,123 @@
 #include "sql_mng.hpp"
 #include "parser.hpp"
 #include "executer.hpp"
+#include "song.hpp"
 //#include "music_search.hpp"
 #include <iostream>
 
-void drop_tables(){
-    m_player::SqlMng sqlmng("my_db");
-    sqlmng.drop_table_by_name("downloads");
-}
 
 void add_songs_to_play_list(){
-    m_player::GptRequest request;
-
+   
     m_player::SqlMng sqlmng("my_db");
 
     //create 10 songs
+     m_player::GptRequest request;
     std::string answer = request.generate_gpt_request("give top 10 trap songs");
 
     //parse them into vector
     m_player::Parser parser;
     std::vector<m_player::Song> songs; 
     parser.parseSongs(answer , songs);
-    //create table if not exists
-    sqlmng.create_table("trap");
+
 
     //add songs into trap table(and into downloads as default)
     for(m_player::Song song : songs){
-        sqlmng.add_song_to_table( "trap" , song);
-        sqlmng.add_song_to_table( "downloads" , song);
+        sqlmng.add_song_to_playlist(song , "trap");
+        parser.printSong(song);
+    }
+    songs.clear();
+    sqlmng.get_songs_from_playlist("trap" ,songs);
 
+    for(m_player::Song song : songs){
         parser.printSong(song);
     }
 
-    //print songs by drake(from downloads)
-    std::vector<m_player::Song> conditional_songs; 
-    sqlmng.get_songs_by_condition(conditional_songs,"Drake","", 0);
-    parser.printSongs(conditional_songs);
-
 }
 
-void print_all_songs(){
-    m_player::Parser parser;
+void check_if_songs_in_list(){
+    m_player::SqlMng sqlmng("my_db");
+    std::vector<m_player::Song> songs; 
+    sqlmng.get_songs_from_playlist("trap" ,songs);
+}
+
+
+
+void insert_sing_song_test(){
+    {
+        m_player::SqlMng sqlmng("my_db");
+        sqlmng.drop_tables();
+
+    }
+    m_player::SqlMng sqlmng("my_db");
+    m_player::Song song(0 , "Traffic" , "Reggie" , 2023 , "Chill" ,2 , 32);
+    sqlmng.add_song_to_list(song);
+    sqlmng.print_songs();
+    sqlmng.print_playlist_table();
+    
+}
+
+void sql_test(){
+    // {
+    //     m_player::SqlMng sqlmng("my_db");
+    // sqlmng.drop_tables();
+
+    // }
+
+    m_player::GptRequest request;
+    std::string answer = request.generate_gpt_request("give top 10 Chill songs");
 
     m_player::SqlMng sqlmng("my_db");
-    sqlmng.print_all_songs_at_table("downloads");
+
+    m_player::Parser parser;
+    std::vector<m_player::Song> songs; 
+    parser.parseSongs(answer , songs);
 
 
-    std::vector<m_player::Song> conditional_songs; 
-    sqlmng.get_songs_by_condition(conditional_songs,"Drake","", 0);
-    parser.printSongs(conditional_songs);
+    //add songs into trap table(and into downloads as default)
+    for(m_player::Song song : songs){
+        sqlmng.add_song_to_playlist(song , "Chill");
+        parser.printSong(song);
+    }
+
+    std::cout << " Chill list:" << std::endl;
+    songs.clear();
+    sqlmng.get_songs_from_playlist("Chill",songs);
+
+    for(m_player::Song song : songs){
+        parser.printSong(song);
+    }
+
+    std::cout << " Trap list:" << std::endl;
+    songs.clear();
+    sqlmng.get_songs_from_playlist("Trap",songs);
+
+    for(m_player::Song song : songs){
+        parser.printSong(song);
+    }
+
+    // sqlmng.print_song_of_playlists();
+    // sqlmng.print_playlist_table();
+
 
 }
 
 void executer_test(){
-    m_player::GptRequest request;
-    m_player::Parser parser;
-    std::vector<m_player::Song> songs; 
+    // m_player::GptRequest request;
+    // m_player::Parser parser;
+    // std::vector<m_player::Song> songs; 
 
-    std::string answer = request.generate_gpt_request("give top 10 trap songs");
-    parser.parseSongs(answer,songs);
-    std::vector<std::string> songs_search;
-    for(auto song : songs){
-        songs_search.emplace_back(song.get_song_name() + "" +  song.get_artist_name());
-    } 
+    // std::string answer = request.generate_gpt_request("give top 10 trap songs");
+    // parser.parseSongs(answer,songs);
+    // std::vector<std::string> songs_search;
+    // for(auto song : songs){
+    //     songs_search.emplace_back(song.get_song_name() + "" +  song.get_artist_name());
+    // } 
     m_player::Executer exe;
 
-    exe.thread_pool(songs_search , 2);
+    exe.multi_execute("give me top 10 hip hop songs ", "hip hop" , 2);
 }
+
+
 
 void need_testing(){
     //sqlmng.remove_all_songs();
@@ -87,13 +138,14 @@ void need_testing(){
 
 int main(){
 
-    //drop_tables();
 
     //add_songs_to_play_list();
 
-    //print_all_songs();
+    //check_if_songs_in_list();
+    //executer_test();
 
-    executer_test();
+
+    sql_test();
 
     
     return 0;
