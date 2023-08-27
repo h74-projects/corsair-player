@@ -4,12 +4,16 @@ CC = $(CXX)
 CFLAGS = -Wall -Werror -Wextra -pedantic -g3
 CXXFLAGS = $(CFLAGS) -std=c++17
 
+INC_DIR = ../../inc
+SRC_DIR = ../../src
+
+CPPFLAGS = -I$(INC_DIR)
+#LDLIBS = 
+
 TARGET = downloader
 
-CPPFLAGS = 
-LDLIBS = 
 
-OBJECTS = downloader.o main.o
+OBJECTS = $(SRC_DIR)/downloader.o main.o
 
 all: $(TARGET)
 
@@ -30,8 +34,8 @@ $(TARGET): $(OBJECTS)
 	$(CXX) $(CXXFLAGS) $^ -o $@ $(CPPFLAGS) $(LDLIBS)
 
 # Dependencies
-main.o: downloader.hpp
-downloader.o: downloader.hpp
+main.o: $(INC_DIR)/downloader.hpp
+$(SRC_DIR)/downloader.o: $(INC_DIR)/downloader.hpp
 
 run-selenium:
 	python3 seleniumScript.py
