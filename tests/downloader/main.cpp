@@ -3,10 +3,10 @@
 
 int main()
 {
-    std::string song = "hanan ben ari - tutim";
+    std::string song = "hanan ben ari - aluf haolam";
     std::string dir = "songs";
-    m_player::Downloader d(song, dir);
-    if(d.download())
+    m_player::Downloader d;
+    if(d.run(song, dir))
     {
         std::cout << "Success!" << '\n';
     }else{
