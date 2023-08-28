@@ -141,7 +141,7 @@ void single_url_test(){
 
 void executer_test(){
     m_player::Executer exe;
-    exe.new_play_list("give me top 10 trap songs 2010" , "Trap");
+    exe.new_play_list("Give me top 10 trap songs  print result in following parsing: songs_name|artists|genere|year. and dont add any other text , and dont mention your data timeline" , "Trap");
 }
 
 void sql_print(){
@@ -153,12 +153,23 @@ void downloader_test(){
     m_player::download("https://www.youtube.com/watch?v=Mb1ZvUDvLDY&ab_channel=2PacVEVO" , "Dear-Mama");
 }
 
+void rest_test(){
+    m_player::SongsController ctrl;
+    std::string res = ctrl.get_songs_list("Give me top 10 trap songs  print result in following parsing: songs_name|artists|genere|year. and dont add any other text , and dont mention your data timeline");
+    std::cout << res << std::endl;
+}
+
 
 int main(){
     //sql_print();
     //clean_db();
     //downloader_test();
+
+    //rest_test();
+
     executer_test();
+
+
     // single_url_test();
     //url_test();
     return 0;

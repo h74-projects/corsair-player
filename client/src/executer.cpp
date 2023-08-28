@@ -33,23 +33,26 @@ Executer::Executer()
 
 void Executer::parse_songs(const std::string& songs_string, std::vector<Song>& songs) 
 {
+   
     std::istringstream iss(songs_string);
     std::string line;
 
     while (std::getline(iss, line)) {
-        std::istringstream line_stream(line);
-        int id, year, duration_min, duration_sec;
-        std::string song_name, song_artists, genre;
+        line = line.substr(line.find('.') + 2);
 
-        line_stream >> id;
-        std::getline(line_stream, song_name, '/');
-        std::getline(line_stream, song_artists, '/');
-        line_stream >> year >> genre >> duration_min >> duration_sec;
+        std::string name, artists, genre, yearStr;
+        std::stringstream ss(line);
 
-        Song song(id, song_name, song_artists, year, genre, duration_min, duration_sec);
+        std::getline(ss, name, '|');
+        std::getline(ss, artists, '|');
+        std::getline(ss, genre, '|');
+        std::getline(ss, yearStr, '|');
 
-        songs.emplace_back(song);
+        int year = std::stoi(yearStr);
+
+        songs.emplace_back(0,name, artists, year,genre,0,0);
     }
+
 }
 
 void Executer::get_url(std::vector<Song>& play_list_vec, std::vector<std::string>& url_vec)
@@ -57,7 +60,7 @@ void Executer::get_url(std::vector<Song>& play_list_vec, std::vector<std::string
     SongsController ctrl; 
     std::vector<std::string> name_and_art;
     for (const auto& song : play_list_vec) {
-        name_and_art.emplace_back(song.get_song_name() + " " + song.get_artist_name());
+        name_and_art.emplace_back(song.get_song_name() + " - " + song.get_artist_name());
     }
     ctrl.get_songs_urls(url_vec, name_and_art);
 }
@@ -106,38 +109,36 @@ void Executer::down_songs(std::vector<Song> a_songs, std::vector<std::string> a_
         queue.enqueue(std::make_pair(a_songs[i].get_song_name()+ " " +a_songs[i].get_artist_name() , a_urls[i]));
 
     }
-    std::pair<std::string, std::string> song_and_url;
-
-    if(queue.dequeue(song_and_url)){
-
-        download(song_and_url.second, song_and_url.first);
-        std::cout << "download";
-        std::this_thread::sleep_for(std::chrono::seconds(4));
-    }
-
-    // size_t therad_count = 3; 
-    // //TODO function to get num of cores
-
-    // // Create a blocking queue to hold the songs
-    // Poco::ThreadPool threadPool(therad_count);
-    // auto worker_function = [&queue]() {
-    //     while (true) {
-    //         std::pair<std::string, std::string> song_and_url;
-    //         if(queue.dequeue(song_and_url)) {
-    //             std::cout << song_and_url.first  << std::endl;
-    //             download(song_and_url.second, song_and_url.first);
-    //         } else {
-    //             break; 
-    //         }
-    //     }
-    // };
-
-    // for (size_t i = 0; i < therad_count; ++i) {
-    //     std::shared_ptr<RunnableFunction> runnable = std::make_shared<RunnableFunction>(worker_function);
-    //     threadPool.start(*runnable); // Pass the MyRunnable instance by reference
+    // std::pair<std::string , std::string> url_song_pair;
+    // while(queue.dequeue(url_song_pair)){
+    //     download(url_song_pair.second, url_song_pair.first);
+    //     std::this_thread::sleep_for(std::chrono::seconds(3));
     // }
 
-    // threadPool.joinAll();
+
+    size_t therad_count = 3; 
+    //TODO function to get num of cores
+
+    // Create a blocking queue to hold the songs
+    Poco::ThreadPool threadPool(therad_count);
+    auto worker_function = [&queue]() {
+        while (true) {
+            std::pair<std::string, std::string> song_and_url;
+            if(queue.dequeue(song_and_url)) {
+                std::cout << song_and_url.first  << std::endl;
+                download(song_and_url.second, song_and_url.first);
+            } else {
+                break; 
+            }
+        }
+    };
+
+    for (size_t i = 0; i < therad_count; ++i) {
+        std::shared_ptr<RunnableFunction> runnable = std::make_shared<RunnableFunction>(worker_function);
+        threadPool.start(*runnable); // Pass the MyRunnable instance by reference
+    }
+
+    threadPool.joinAll();
 }
 
 }//namespace m_player
