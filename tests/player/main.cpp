@@ -58,6 +58,11 @@ void insert_sing_song_test(){
     
 }
 
+void clean_db(){
+    m_player::SqlMng sqlmng("my_db");
+    sqlmng.drop_tables();
+}
+
 void sql_test(){
 
 
@@ -132,10 +137,16 @@ void single_url_test(){
 
 }
 
+void executer_test(){
+    m_player::Executer exe;
+    
+}
+
 
 
 int main(){
-    single_url_test();
+    clean_db();
+   // single_url_test();
     //url_test();
     return 0;
 }
