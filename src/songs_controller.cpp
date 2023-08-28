@@ -7,8 +7,6 @@ SongsController::SongsController()
 {}
 
 void SongsController::get_songs_urls(std::vector<std::string>& a_result, const std::vector<std::string>& queries) {
-    
-
     for (const auto& query : queries) {
         web::http::uri_builder builder(U("/search"));
         builder.append_query(U("q"), web::uri::encode_data_string(query));
@@ -22,20 +20,27 @@ void SongsController::get_songs_urls(std::vector<std::string>& a_result, const s
 
         request.set_body(json_data);
 
-       auto result_task = m_client.request(request)
+        auto result_task = m_client.request(request)
             .then([](web::http::http_response response) {
                 if (response.status_code() == web::http::status_codes::OK) {
-                    return response.to_string();
+                    return response.extract_json();
                 } else {
                     throw std::runtime_error("HTTP request failed with status code: " + std::to_string(response.status_code()));
                 }
             });
 
-        utility::string_t response_str = result_task.get();
-        a_result.push_back(utility::conversions::to_utf8string(response_str));
+        auto json_response = result_task.get();
+        if (json_response.has_field(U("video_links"))) {
+            web::json::array video_links = json_response[U("video_links")].as_array();
+            for (const auto& link : video_links) {
+                if (link.is_string()) {
+                    a_result.push_back(utility::conversions::to_utf8string(link.as_string()));
+                }
+            }
+        }
     }
-
 }
+
 
 
 
