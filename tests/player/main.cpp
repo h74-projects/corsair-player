@@ -5,6 +5,7 @@
 #include "song.hpp"
 //#include "music_search.hpp"
 #include <iostream>
+#include "songs_controller.hpp"
 
 
 void add_songs_to_play_list(){
@@ -58,20 +59,13 @@ void insert_sing_song_test(){
 }
 
 void sql_test(){
-    // {
-    //     m_player::SqlMng sqlmng("my_db");
-    // sqlmng.drop_tables();
 
-    // }
-
-    m_player::GptRequest request;
-    std::string answer = request.generate_gpt_request("give top 10 Chill songs");
 
     m_player::SqlMng sqlmng("my_db");
 
     m_player::Parser parser;
     std::vector<m_player::Song> songs; 
-    parser.parseSongs(answer , songs);
+   // parser.parseSongs(answer , songs);
 
 
     //add songs into trap table(and into downloads as default)
@@ -102,41 +96,34 @@ void sql_test(){
 
 }
 
-void executer_test(){
-    // m_player::GptRequest request;
-    // m_player::Parser parser;
-    // std::vector<m_player::Song> songs; 
+void url_test(){
+    std::vector<std::string> topSongs;
 
-    // std::string answer = request.generate_gpt_request("give top 10 trap songs");
-    // parser.parseSongs(answer,songs);
-    // std::vector<std::string> songs_search;
-    // for(auto song : songs){
-    //     songs_search.emplace_back(song.get_song_name() + "" +  song.get_artist_name());
-    // } 
-    m_player::Executer exe;
+    // Insert the names of the top 10 songs
+    topSongs.push_back("Bohemian Rhapsody");
+    topSongs.push_back("Like a Rolling Stone");
+    topSongs.push_back("Imagine");
+    topSongs.push_back("Billie Jean");
+    topSongs.push_back("Stairway to Heaven");
+    topSongs.push_back("Hey Jude");
+    topSongs.push_back("Smells Like Teen Spirit");
+    topSongs.push_back("What's Going On");
+    topSongs.push_back("Johnny B. Goode");
+    topSongs.push_back("Hotel California");
+    std::vector<std::string> results;
 
-    exe.multi_execute("give me top 10 hip hop songs ", "hip hop" , 2);
-}
+    m_player::SongsController songs_crl;
+    songs_crl.get_songs_urls(results, topSongs) ;
+    for(auto song : results){
+        std::cout << song << std::endl;
+    }
 
-
-
-void need_testing(){
-    //sqlmng.remove_all_songs();
-    //sqlmng.drop_songs_table();
-    // sqlmng.add_song("right now" , "akon");
-    // sqlmng.add_song("lonely" , "akon");
-
-    // std::cout << std::boolalpha <<  sqlmng.is_song_exists("people" , "libianca") << std::endl;
-    // std::cout  <<  sqlmng.is_song_exists("people" , "someelse") << std::endl;
-    /// std::cout  <<  sqlmng.is_song_exists("else" , "libianca") << std::endl;
-
-    // m_player::Music_Search search;
-    //search.print_maps();
 }
 
 
 
 int main(){
+
 
 
     //add_songs_to_play_list();
@@ -145,8 +132,7 @@ int main(){
     //executer_test();
 
 
-    sql_test();
-
-    
+    //sql_test();
+    url_test();
     return 0;
 }
