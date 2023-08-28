@@ -11,8 +11,8 @@ class SongsController{
 public:
 SongsController();
 ~SongsController() = default;
-std::vector<std::string> get_songs_urls(const std::vector<std::string>& queries);
-std::string get_song_list(const std::string& query);
+void get_songs_urls(std::vector<std::string>& a_result, const std::vector<std::string>& queries);
+std::string get_songs_list(const std::string& query);
 
 private:
     web::http::client::http_client m_client;
