@@ -71,7 +71,7 @@ void Executer::New_play_list(std::string a_playlist, std::string a_playlist_name
     get_url(play_list_vec, url_vec);
     sent_to_db(play_list_vec, a_playlist_name);
     m_db.print_songs();
-    //down_songs(play_list_vec, url_vec);   
+    down_songs(play_list_vec, url_vec);   
 }
 
 // void Executer::New_Song(std::string a_playlist)
@@ -115,7 +115,7 @@ void Executer::down_songs(std::vector<Song> a_songs, std::vector<std::string> a_
             std::string song;
             if (queue.dequeue(song)) {
                 std::cout << song  << std::endl;
-            //  dwn.run(song, "../assets/songs");
+                download(song.second(), song.first());
             } else {
                 break; 
             }
