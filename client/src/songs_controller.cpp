@@ -74,12 +74,12 @@ void SongsController::get_song_url(std::string& song_url, const std::string& que
 }
 
 
-
 std::string SongsController::get_songs_list(const std::string& message) {
 
     // Construct the JSON message
     web::json::value request;
-    request[U("message")] = web::json::value::string(message);
+    std::string message_n_rules = message + " print result in following parsing: songs_name|artists|genere|year. dont add any other text";
+    request[U("message")] = web::json::value::string(message_n_rules);
 
     // Create the HTTP request
     web::http::http_request req(web::http::methods::POST);

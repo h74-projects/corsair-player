@@ -38,8 +38,6 @@ void Executer::parse_songs(const std::string& songs_string, std::vector<Song>& s
     std::string line;
 
     while (std::getline(iss, line)) {
-        line = line.substr(line.find('.') + 2);
-
         std::string name, artists, genre, yearStr;
         std::stringstream ss(line);
 
@@ -47,8 +45,12 @@ void Executer::parse_songs(const std::string& songs_string, std::vector<Song>& s
         std::getline(ss, artists, '|');
         std::getline(ss, genre, '|');
         std::getline(ss, yearStr, '|');
+        yearStr.erase(std::remove_if(yearStr.begin(), yearStr.end(), [](char c) { return !std::isdigit(c); }), yearStr.end());
+        int year ;
+        if(!yearStr.empty()){
+            year = std::stoi(yearStr);
 
-        int year = std::stoi(yearStr);
+        }
 
         songs.emplace_back(0,name, artists, year,genre,0,0);
     }

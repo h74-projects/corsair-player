@@ -155,14 +155,14 @@ void downloader_test(){
 
 void rest_test(){
     m_player::SongsController ctrl;
-    std::string res = ctrl.get_songs_list("Give me top 10 trap songs  print result in following parsing: songs_name|artists|genere|year. and dont add any other text , and dont mention your data timeline");
+    std::string res = ctrl.get_songs_list("Give me top 10 trap songs");
     std::cout << res << std::endl;
 }
 
 
 int main(){
     //sql_print();
-    //clean_db();
+    clean_db();
     //downloader_test();
 
     //rest_test();

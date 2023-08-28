@@ -1,12 +1,12 @@
 from flask import Flask, request, jsonify
-import requests
+import openai
 from youtubesearchpython  import VideosSearch
 
 
 app = Flask(__name__)
 
 # Replace with your actual ChatGPT API key
-CHATGPT_API_KEY = "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"
+openai.api_key = "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"
 
 # ChatGPT API endpoint
 CHATGPT_API_URL = "https://api.openai.com/v1/chat/completions"
@@ -23,19 +23,15 @@ def chat():
     
     message = data['message']
     
-    headers = {
-        'Content-Type': 'application/json',
-        'Authorization': f'Bearer {CHATGPT_API_KEY}'
-    }
+    prompt = f"User: {message}\nAssistant:"
     
-    payload = {
-        'model': 'gpt-3.5-turbo',
-        'messages': [{'role': 'system', 'content': 'You are a helpful assistant.'},
-                     {'role': 'user', 'content': message}]
-    }
+    response = openai.Completion.create(
+        engine="text-davinci-003",  # Choose the appropriate engine
+        prompt=prompt,
+        max_tokens=700  # Adjust as needed
+    )
     
-    response = requests.post(CHATGPT_API_URL, json=payload, headers=headers)
-    chat_response = response.json()['choices'][0]['message']['content']
+    chat_response = response.choices[0].text.strip()
     
     return jsonify({'response': chat_response})
 
