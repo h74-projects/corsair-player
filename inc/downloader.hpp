@@ -7,9 +7,10 @@ namespace m_player{
 
 class Downloader{
 public:
-    Downloader(std::string a_query, std::string a_path);
+    Downloader();
 
-    bool download();
+    bool download(std::string a_song, std::string a_path = "../assets/songs/");
+    bool run(std::string a_song, std::string a_path);
     // std::string get_link();
     
 private:
@@ -17,8 +18,6 @@ private:
 
 private:
     std::string m_link;
-    std::string m_path;
-    std::string m_file_name;
 };
 
 std::string find_url(const std::string& a_query);
