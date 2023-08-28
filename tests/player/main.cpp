@@ -121,18 +121,21 @@ void url_test(){
 }
 
 
+void single_url_test(){
+
+    std::vector<std::string> results;
+
+    m_player::SongsController songs_url;
+    std::string url_result;
+    songs_url.get_song_url(url_result , "Dear Mama 2pac");
+    std::cout << url_result << std::endl;
+
+}
+
+
 
 int main(){
-
-
-
-    //add_songs_to_play_list();
-
-    //check_if_songs_in_list();
-    //executer_test();
-
-
-    //sql_test();
-    url_test();
+    single_url_test();
+    //url_test();
     return 0;
 }
