@@ -89,6 +89,16 @@ void Song::set_duration_seconds(int a_duration_in_sec) {
     m_duration.m_seconds = a_duration_in_sec;
 }
 
+void Song::print() const
+{
+     std::cout << "Song ID: " << m_song_id << "\n";
+    std::cout << "Song Name: " << m_song_name << "\n";
+    std::cout << "Artist: " << m_artist << "\n";
+    std::cout << "Year: " << m_year << "\n";
+    std::cout << "Genre: " << m_genre << "\n";
+    std::cout << "Duration: " << m_duration.m_minutes << " min " <<  m_duration.m_seconds << " sec\n";
+}
+
 
 
 } //namespace m_player

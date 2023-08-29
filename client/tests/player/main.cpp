@@ -141,34 +141,31 @@ void single_url_test(){
 
 void executer_test(){
     m_player::Executer exe;
-    exe.new_play_list("Give me top 10 trap songs  print result in following parsing: songs_name|artists|genere|year. and dont add any other text , and dont mention your data timeline" , "Trap");
+    exe.new_play_list("Give me top 10 hiphop songs of 20s" , "Hip Hop");
 }
 
 void sql_print(){
     m_player::SqlMng sql("my_db");
     sql.print_songs();
+    sql.print_song_of_playlists();
+    sql.print_playlist_table();
+    std::vector<m_player::Song> song_vec;
+
+    sql.get_songs_from_playlist("Hip Hop", song_vec);
+    std::cout << "Hip hop playlist:" << std::endl;
+    for(auto song: song_vec){
+        song.print();
     }
 
-void downloader_test(){
-    m_player::download("https://www.youtube.com/watch?v=Mb1ZvUDvLDY&ab_channel=2PacVEVO" , "Dear-Mama");
 }
 
-void rest_test(){
-    m_player::SongsController ctrl;
-    std::string res = ctrl.get_songs_list("Give me top 10 trap songs");
-    std::cout << res << std::endl;
-}
 
 
 int main(){
     //sql_print();
-    clean_db();
-    //downloader_test();
-
-    //rest_test();
+    //clean_db();
 
     executer_test();
-
 
     // single_url_test();
     //url_test();

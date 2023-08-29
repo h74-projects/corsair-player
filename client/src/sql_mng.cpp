@@ -260,49 +260,6 @@ int SqlMng::get_song_id_by_name(const std::string& songName) {
     return songId;
 }
 
-void SqlMng::get_playlist_songs(std::vector<Song>& a_songs, const std::string& playlistName) {
-    int playlistId = get_playlist_id_by_name(playlistName);
-    if (playlistId == -1) {
-        std::cerr << "Playlist not found: " << playlistName << std::endl;
-    }
-    std::string selectSongsQuery = "SELECT songs.song_id, songs.song_name, artists.artist_name, "
-                                   "songs.year, genres.name, songs.duration_min, songs.duration_sec "
-                                   "FROM songs_of_playlist "
-                                   "INNER JOIN songs ON songs_of_playlist.song_id = songs.song_id "
-                                   "INNER JOIN artists ON songs.artist_id = artists.artist_id "
-                                   "INNER JOIN genres ON songs.genre_id = genres.genre_id "
-                                   "WHERE songs_of_playlist.playlist_id = ?;";
-
-    sqlite3_stmt* stmt;
-
-    if (sqlite3_prepare_v2(m_db, selectSongsQuery.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
-        std::cerr << "Failed to prepare playlist songs retrieval query: " << sqlite3_errmsg(m_db) << std::endl;
-    }
-
-    if (sqlite3_bind_int(stmt, 1, playlistId) != SQLITE_OK) {
-        std::cerr << "Failed to bind playlist ID: " << sqlite3_errmsg(m_db) << std::endl;
-        sqlite3_finalize(stmt);
-    }
-
-    while (sqlite3_step(stmt) == SQLITE_ROW) {
-        int songId = sqlite3_column_int(stmt, 0);
-        const unsigned char* songName = sqlite3_column_text(stmt, 1);
-        const unsigned char* artistName = sqlite3_column_text(stmt, 2);
-        int year = sqlite3_column_int(stmt, 3);
-        const unsigned char* genre = sqlite3_column_text(stmt, 4);
-        int durationMin = sqlite3_column_int(stmt, 5);
-        int durationSec = sqlite3_column_int(stmt, 6);
-
-        if (songName && artistName && genre) {
-            Song song(songId, reinterpret_cast<const char*>(songName), reinterpret_cast<const char*>(artistName),
-                      year, reinterpret_cast<const char*>(genre), durationMin, durationSec);
-            a_songs.push_back(song);
-        }
-    }
-
-    sqlite3_finalize(stmt);
-}
-
 void SqlMng::get_songs_by_condition(std::vector<Song>& a_found_songs, const std::string& artist, const std::string& genre, int year) {    
 
 

@@ -6,7 +6,7 @@ from youtubesearchpython  import VideosSearch
 app = Flask(__name__)
 
 # Replace with your actual ChatGPT API key
-openai.api_key = "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"
+openai.api_key = "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"
 
 # ChatGPT API endpoint
 CHATGPT_API_URL = "https://api.openai.com/v1/chat/completions"
@@ -26,7 +26,7 @@ def chat():
     prompt = f"User: {message}\nAssistant:"
     
     response = openai.Completion.create(
-        engine="text-davinci-003",  # Choose the appropriate engine
+        engine="text-davinci-003", 
         prompt=prompt,
         max_tokens=700  # Adjust as needed
     )

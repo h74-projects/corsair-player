@@ -99,7 +99,6 @@ void Executer::sent_to_db(std::vector<Song> a_songs, std::string a_name)
 
 void Executer::down_songs(std::vector<Song> a_songs, std::vector<std::string> a_urls)
 {
-    std::cout << "songs size:" << a_songs.size() << "url_size:" << a_urls.size();
     if (a_songs.size() != a_urls.size()) {
         std::cerr << "not possible downlaod list\n";
         return;
@@ -108,16 +107,10 @@ void Executer::down_songs(std::vector<Song> a_songs, std::vector<std::string> a_
     BlockingQueue<std::pair<std::string, std::string>> queue;
 
     for (size_t i = 0; i < a_songs.size(); ++i) {
-        queue.enqueue(std::make_pair(a_songs[i].get_song_name()+ " " +a_songs[i].get_artist_name() , a_urls[i]));
+        queue.enqueue(std::make_pair(a_songs[i].get_song_name()+ " - " +a_songs[i].get_artist_name() , a_urls[i]));
 
     }
-    // std::pair<std::string , std::string> url_song_pair;
-    // while(queue.dequeue(url_song_pair)){
-    //     download(url_song_pair.second, url_song_pair.first);
-    //     std::this_thread::sleep_for(std::chrono::seconds(3));
-    // }
-
-
+    create_songs_file();
     size_t therad_count = 3; 
     //TODO function to get num of cores
 

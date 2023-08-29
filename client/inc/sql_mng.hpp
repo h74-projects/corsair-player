@@ -22,7 +22,6 @@ void add_song_to_list(const Song& a_song);
 bool add_song_to_playlist(Song a_song , std::string a_playlist);
 void add_playlist(std::string a_playlist);
 
-void get_playlist_songs(std::vector<Song>& a_songs, const std::string& a_playlist_name);
 int get_song_id_by_name(const std::string& songName);
 int get_playlist_id_by_name(const std::string& playlistName);
 void get_songs_from_playlist(const std::string& playlistName, std::vector<Song>& songs);
