@@ -58,6 +58,11 @@ void insert_sing_song_test(){
     
 }
 
+void clean_db(){
+    m_player::SqlMng sqlmng("my_db");
+    sqlmng.drop_tables();
+}
+
 void sql_test(){
 
 
@@ -121,18 +126,27 @@ void url_test(){
 }
 
 
+void single_url_test(){
+
+    std::vector<std::string> results;
+
+    m_player::SongsController songs_url;
+    std::string url_result;
+    songs_url.get_song_url(url_result , "Dear Mama 2pac");
+    std::cout << url_result << std::endl;
+
+}
+
+void executer_test(){
+    m_player::Executer exe;
+    
+}
+
+
 
 int main(){
-
-
-
-    //add_songs_to_play_list();
-
-    //check_if_songs_in_list();
-    //executer_test();
-
-
-    //sql_test();
-    url_test();
+    clean_db();
+   // single_url_test();
+    //url_test();
     return 0;
 }
