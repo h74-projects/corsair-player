@@ -1,5 +1,6 @@
 #ifndef SONGS_CONTROLLER_HPP
 #define SONGS_CONTROLLER_HPP
+#include "song.hpp"
 
 #include <cpprest/http_client.h>
 #include <cpprest/json.h>
@@ -16,7 +17,7 @@ public:
     void get_songs_urls(std::vector<std::string>& a_result, const std::vector<std::string>& queries);
     void get_song_url(std::string& a_song_url, const std::string& a_query);
     std::string get_songs_list(const std::string& a_songs_request);
-    std::string get_song_lyrics(const std::string& a_song_name);
+    std::string get_lyrics(const std::string& a_song_name);
 
 
 private:

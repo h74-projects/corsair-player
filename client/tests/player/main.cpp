@@ -128,15 +128,6 @@ void url_test(){
 }
 
 
-void single_url_test(){
-    std::vector<std::string> results;
-    m_player::SongsController songs_url;
-    std::string result;
-    //songs_url.get_song_url(url_result , "Dear Mama 2pac");
-    result = songs_url.get_song_lyrics("Dear Mama 2pac");
-    std::cout << result << std::endl;
-}
-
 void executer_test(){
     m_player::Executer exe;
     exe.new_play_list("Give me top 10 hiphop songs of 20s" , "Hip Hop");
@@ -159,11 +150,11 @@ void sql_print(){
 
 
 int main(){
-    //sql_print();
+    sql_print();
     //clean_db();
 
+
     //executer_test();
-    single_url_test();
     // single_url_test();
     //url_test();
     return 0;
