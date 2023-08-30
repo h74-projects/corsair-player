@@ -40,6 +40,8 @@ Song();
     void set_duration_minutes(int a_duration_in_min);
     void set_duration_seconds(int a_duration_in_sec);
 
+    void print() const;
+
 private:
     int m_song_id;
     std::string m_song_name;
