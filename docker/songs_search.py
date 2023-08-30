@@ -6,7 +6,7 @@ from youtubesearchpython  import VideosSearch
 app = Flask(__name__)
 
 # Replace with your actual ChatGPT API key
-openai.api_key = "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"
+openai.api_key = "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"
 
 # ChatGPT API endpoint
 CHATGPT_API_URL = "https://api.openai.com/v1/chat/completions"

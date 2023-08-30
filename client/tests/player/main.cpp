@@ -129,14 +129,12 @@ void url_test(){
 
 
 void single_url_test(){
-
     std::vector<std::string> results;
-
     m_player::SongsController songs_url;
-    std::string url_result;
-    songs_url.get_song_url(url_result , "Dear Mama 2pac");
-    std::cout << url_result << std::endl;
-
+    std::string result;
+    //songs_url.get_song_url(url_result , "Dear Mama 2pac");
+    result = songs_url.get_song_lyrics("Dear Mama 2pac");
+    std::cout << result << std::endl;
 }
 
 void executer_test(){
@@ -156,7 +154,6 @@ void sql_print(){
     for(auto song: song_vec){
         song.print();
     }
-
 }
 
 
@@ -165,8 +162,8 @@ int main(){
     //sql_print();
     //clean_db();
 
-    executer_test();
-
+    //executer_test();
+    single_url_test();
     // single_url_test();
     //url_test();
     return 0;
