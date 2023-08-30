@@ -1,12 +1,13 @@
 from flask import Flask, request, jsonify
 import openai
 from youtubesearchpython  import VideosSearch
+import lyricsgenius
 
 
 app = Flask(__name__)
 
 # Replace with your actual ChatGPT API key
-openai.api_key = "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"
+openai.api_key = "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"
 
 # ChatGPT API endpoint
 CHATGPT_API_URL = "https://api.openai.com/v1/chat/completions"
@@ -57,7 +58,23 @@ def search_youtube():
             all_links.append(None)
     
     return jsonify({'video_links': all_links})
+
+GENIUS_ACCESS_TOKEN = "3KaaL4GnPKjv-B4D6Ehsqo5unXXKxVzzFVNpiAP7VQ3Vxrqg1hULF4dHDR111Wm0"
+
+@app.route('/lyrics', methods=['GET'])
+def get_lyrics():
+    query = request.args.get('query')
     
+    if not query:
+        return jsonify({"error": "Missing 'query' parameter"}), 400
+
+    genius = lyricsgenius.Genius(GENIUS_ACCESS_TOKEN)
+    song = genius.search_song(query)
+    
+    if song:
+        return jsonify({"lyrics": song.lyrics})
+    else:
+         return jsonify({"lyrics": "Error"})
     
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

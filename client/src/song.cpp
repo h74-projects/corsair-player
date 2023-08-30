@@ -3,13 +3,13 @@
 
 namespace m_player{
 
-Song::Song(const int& a_song_id, const std::string& a_song_name, const std::string& a_song_artists, const int& a_year, const std::string& a_genre, int a_duration_min, int a_duration_sec)
+Song::Song(const int& a_song_id, const std::string& a_song_name, const std::string& a_song_artists, const int& a_year, const std::string& a_genre, std::string a_lyrics)
     :m_song_id(a_song_id)
     ,m_song_name(a_song_name)
     ,m_artist(a_song_artists)
     ,m_year(a_year)
     ,m_genre(a_genre)
-    ,m_duration(a_duration_min, a_duration_sec)
+    ,m_lyrics(a_lyrics)
 {
 }
 
@@ -19,7 +19,7 @@ Song::Song()
     ,m_artist("")
     ,m_year(0)
     ,m_genre("")
-    ,m_duration(0, 0) // Initialize duration to 0 minutes and 0 seconds
+    ,m_lyrics("")
 {
 }
 
@@ -28,15 +28,6 @@ Song::Song()
 Song::~Song(){}
 
 
-int Song::get_duration_minutes() const
-{
-    return m_duration.m_minutes;
-}
-
-int Song::get_duration_seconds() const
-{
-    return m_duration.m_seconds;
-}
 
 std::string Song::get_song_name()const
 {
@@ -81,13 +72,22 @@ void Song::set_genre(std::string a_genre) {
     m_genre = std::move(a_genre);
 }
 
-void Song::set_duration_minutes(int a_duration_in_min) {
-    m_duration.m_minutes = a_duration_in_min;
+
+void Song::set_lyrics(std::string a_lyrics)
+{
+    m_lyrics = a_lyrics;
 }
 
-void Song::set_duration_seconds(int a_duration_in_sec) {
-    m_duration.m_seconds = a_duration_in_sec;
+std::string Song::get_lyrics()const
+{
+    return m_lyrics;
 }
+
+std::string Song::get_search_name()const
+{
+    return m_song_name + " - " + m_artist;
+}
+
 
 void Song::print() const
 {
@@ -96,9 +96,7 @@ void Song::print() const
     std::cout << "Artist: " << m_artist << "\n";
     std::cout << "Year: " << m_year << "\n";
     std::cout << "Genre: " << m_genre << "\n";
-    std::cout << "Duration: " << m_duration.m_minutes << " min " <<  m_duration.m_seconds << " sec\n";
+    std::cout << "lyrics:" << m_lyrics << "\n";
 }
-
-
 
 } //namespace m_player

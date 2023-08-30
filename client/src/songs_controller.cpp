@@ -101,33 +101,30 @@ std::string SongsController::get_songs_list(const std::string& message) {
     }
 }
 
-std::string SongsController::get_song_lyrics(const std::string& a_song_name){
-  // Construct the JSON message
-    web::json::value request;
-    std::string message_n_rules = "Generate lyrics for a song called: "+ a_song_name;
-    request[U("message")] = web::json::value::string(message_n_rules);
+
+std::string SongsController::get_lyrics(const std::string& a_song_name) {
+    // Construct the request URI
+    web::http::uri_builder builder(U("/lyrics"));
+    builder.append_query(U("query"), a_song_name);
 
     // Create the HTTP request
-    web::http::http_request req(web::http::methods::POST);
+    web::http::http_request req(web::http::methods::GET);
     req.headers().set_content_type(U("application/json"));
-    req.set_request_uri(U("/chat"));
-    req.set_body(request);
+    req.set_request_uri(builder.to_string());
 
     // Perform the request
     web::http::http_response response = m_client.request(req).get();
     if (response.status_code() == web::http::status_codes::OK) {
         web::json::value jsonResponse = response.extract_json().get();
-        if (jsonResponse.has_field(U("response"))) {
-            return jsonResponse[U("response")].as_string();
+        if (jsonResponse.has_field(U("lyrics"))) {
+            return jsonResponse[U("lyrics")].as_string();
         } else {
-            throw std::runtime_error("Response field 'response' not found in JSON.");
+            throw std::runtime_error("Response field 'lyrics' not found in JSON.");
         }
     } else {
         throw std::runtime_error("HTTP request failed.");
-    }  
+    }
 }
-
-
 
 
 }//namespace m_player

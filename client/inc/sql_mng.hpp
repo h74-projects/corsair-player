@@ -31,6 +31,10 @@ void get_songs_by_condition(std::vector<Song>& a_found_songs, const std::string&
 bool is_song_exists(const Song& a_song);
 bool is_playlist_exists(std::string a_playlist);
 
+void add_lyrics(std::pair<Song , std::string> lyrics_pair);
+//TODO
+std::vector<std::string> get_playlists();
+
 void print_songs();
 void print_song_of_playlists();
 void print_playlist_table();

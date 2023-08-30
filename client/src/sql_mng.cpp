@@ -16,8 +16,7 @@ SqlMng::SqlMng(const std::string& a_db_name)
                                    "artist TEXT,"
                                    "year INTEGER,"
                                    "genre TEXT,"
-                                   "duration_min INTEGER,"
-                                   "duration_sec INTEGER);";
+                                   "lyrics TEXT);";
     execute_statment(create_songs_sable);
     
     std::string createPlaylistTable = "CREATE TABLE IF NOT EXISTS playlist ("
@@ -56,15 +55,14 @@ void SqlMng::print_songs(){
         const unsigned char* artist = sqlite3_column_text(stmt, 2);
         int year = sqlite3_column_int(stmt, 3);
         const unsigned char* genre = sqlite3_column_text(stmt, 4);
-        int duration_min = sqlite3_column_int(stmt, 5);
-        int duration_sec = sqlite3_column_int(stmt, 6);
+        const unsigned char* lyrics = sqlite3_column_text(stmt, 5);
 
         std::cout << "Song ID: " << song_id << std::endl;
         std::cout << "Song Name: " << song_name << std::endl;
         std::cout << "Artist: " << artist << std::endl;
         std::cout << "Year: " << year << std::endl;
         std::cout << "Genre: " << genre << std::endl;
-        std::cout << "Duration: " << duration_min << " min " << duration_sec << " sec" << std::endl;
+        std::cout << "Lyrics: " << (lyrics[0] == '\0') << std::endl;
         std::cout << std::endl;
     }
 
@@ -138,8 +136,8 @@ void SqlMng::add_song_to_list(const Song& a_song)
         return;
     }
     std::string add_song_query = "INSERT INTO songs "
-                     "(song_name, artist, year, genre, duration_min, duration_sec) "
-                     "VALUES (?, ?, ?, ?, ?, ?)";
+                     "(song_name, artist, year, genre, lyrics) "
+                     "VALUES (?, ?, ?, ?, ?)";
 
     sqlite3_stmt* stmt;
     int result = sqlite3_prepare_v2(m_db, add_song_query.c_str(), -1, &stmt, nullptr);
@@ -153,8 +151,8 @@ void SqlMng::add_song_to_list(const Song& a_song)
     sqlite3_bind_text(stmt, 2, a_song.get_artist_name().c_str(), -1, SQLITE_TRANSIENT );
     sqlite3_bind_int(stmt, 3, a_song.get_year());
     sqlite3_bind_text(stmt, 4, a_song.get_genre().c_str(), -1, SQLITE_TRANSIENT );
-    sqlite3_bind_int(stmt, 5, a_song.get_duration_minutes());
-    sqlite3_bind_int(stmt, 6, a_song.get_duration_seconds());
+    sqlite3_bind_text(stmt, 5, a_song.get_lyrics().c_str(), -1, SQLITE_TRANSIENT);
+
 
     result = sqlite3_step(stmt);
 
@@ -298,10 +296,11 @@ void SqlMng::get_songs_by_condition(std::vector<Song>& a_found_songs, const std:
         std::string song_artists = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2));
         int year = sqlite3_column_int(stmt, 3);
         std::string genre = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 4));
-        int duration_min = sqlite3_column_int(stmt, 5);
-        int duration_sec = sqlite3_column_int(stmt, 6);
+        std::string lyrics = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 5));
 
-        a_found_songs.emplace_back(id ,song_name, song_artists, year, genre, duration_min, duration_sec);
+
+
+        a_found_songs.emplace_back(id ,song_name, song_artists, year, genre, lyrics);
     }
     if (rc != SQLITE_DONE) {
         std::cerr << "Error while retrieving data: " << sqlite3_errmsg(m_db) << std::endl;
@@ -311,7 +310,7 @@ void SqlMng::get_songs_by_condition(std::vector<Song>& a_found_songs, const std:
 
 bool SqlMng::is_song_exists(const Song& a_song) {
      std::string query = "SELECT * FROM songs WHERE "
-                        "song_name = ? AND artist = ? AND year = ? AND genre = ? AND duration_min = ? AND duration_sec = ?;";
+                        "song_name = ? AND artist = ? AND year = ? AND genre = ?;";
     sqlite3_stmt* stmt;
 
     int rc = sqlite3_prepare_v2(m_db, query.c_str(), -1, &stmt, nullptr);
@@ -324,8 +323,6 @@ bool SqlMng::is_song_exists(const Song& a_song) {
     sqlite3_bind_text(stmt, 2, a_song.get_artist_name().c_str(), -1, SQLITE_TRANSIENT);
     sqlite3_bind_int(stmt, 3, a_song.get_year());
     sqlite3_bind_text(stmt, 4, a_song.get_genre().c_str(), -1, SQLITE_TRANSIENT);
-    sqlite3_bind_int(stmt, 5, a_song.get_duration_minutes());
-    sqlite3_bind_int(stmt, 6, a_song.get_duration_seconds());
 
     bool exists = (sqlite3_step(stmt) == SQLITE_ROW);
 
@@ -370,6 +367,10 @@ bool SqlMng::add_song_to_playlist(Song a_song, std::string a_playlist) {
         add_playlist(a_playlist);
     }
 
+    // if(is_songs_in_playlist)(
+    //     return false;
+    // )
+
     std::string insertQuery = "INSERT INTO songs_of_playlist (playlist_id, song_id) "
                               "VALUES ((SELECT playlist_id FROM playlist WHERE playlist.playlist_name = ?), "
                               "(SELECT song_id FROM songs WHERE songs.song_name = ? AND songs.artist = ? AND songs.year = ?));";
@@ -400,8 +401,7 @@ bool SqlMng::add_song_to_playlist(Song a_song, std::string a_playlist) {
 }
 
 void SqlMng::get_songs_from_playlist(const std::string& playlistName, std::vector<Song>& songs) {
-    std::string selectQuery = "SELECT songs.song_id, songs.song_name, songs.artist, songs.year, songs.genre, songs.duration_min, songs.duration_sec "
-                              "FROM songs "
+    std::string selectQuery = "SELECT *  FROM songs "
                               "INNER JOIN songs_of_playlist ON songs.song_id = songs_of_playlist.song_id "
                               "INNER JOIN playlist ON songs_of_playlist.playlist_id = playlist.playlist_id "
                               "WHERE playlist.playlist_name = ?;";
@@ -421,11 +421,9 @@ void SqlMng::get_songs_from_playlist(const std::string& playlistName, std::vecto
         std::string artist = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2));
         int year = sqlite3_column_int(stmt, 3);
         std::string genre = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 4));
-        int durationMin = sqlite3_column_int(stmt, 5);
-        int durationSec = sqlite3_column_int(stmt, 6);
+        std::string lyrics = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 5));
 
-        Song song(id, songName, artist, year, genre, durationMin, durationSec);
-        songs.push_back(song);
+        songs.emplace_back(id, songName, artist, year, genre, lyrics);
     }
 
     sqlite3_finalize(stmt);
@@ -440,5 +438,35 @@ bool SqlMng::execute_statment(const std::string& a_statment){
     }
     return true;
 }
+
+
+void SqlMng::add_lyrics(std::pair<Song , std::string> lyrics_pair)
+{
+    std::string insertQuery = "UPDATE songs SET lyrics = ? "
+                            "WHERE song_name = ? AND artist = ? "
+                            "AND genre = ? AND year = ?;";
+                
+    sqlite3_stmt* stmt;
+
+    if (sqlite3_prepare_v2(m_db, insertQuery.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
+        std::cerr << "Failed to prepare insertion query: " << sqlite3_errmsg(m_db) << std::endl;
+        return ;
+    }
+
+    sqlite3_bind_text(stmt, 1, lyrics_pair.second.c_str(), -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(stmt, 2, lyrics_pair.first.get_song_name().c_str(), -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(stmt, 3, lyrics_pair.first.get_artist_name().c_str(), -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(stmt, 4, lyrics_pair.first.get_genre().c_str(), -1, SQLITE_TRANSIENT);
+    sqlite3_bind_int(stmt, 5, lyrics_pair.first.get_year());
+
+    int rc = sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+
+    if (rc != SQLITE_DONE) {
+        std::cerr << "Failed to execute insertion query: " << sqlite3_errmsg(m_db) << std::endl;
+
+    }
+}
+
 
 }

@@ -51,8 +51,7 @@ void Executer::parse_songs(const std::string& songs_string, std::vector<Song>& s
             year = std::stoi(yearStr);
 
         }
-
-        songs.emplace_back(0,name, artists, year,genre,0,0);
+        songs.emplace_back(0, name, artists, year, genre, "");
     }
 
 }
@@ -62,10 +61,11 @@ void Executer::get_url(std::vector<Song>& play_list_vec, std::vector<std::string
     SongsController ctrl; 
     std::vector<std::string> name_and_art;
     for (const auto& song : play_list_vec) {
-        name_and_art.emplace_back(song.get_song_name() + " - " + song.get_artist_name());
+        name_and_art.emplace_back(song.get_search_name());
     }
     ctrl.get_songs_urls(url_vec, name_and_art);
 }
+
 
 
 void Executer::new_play_list(std::string a_playlist, std::string a_playlist_name)
@@ -78,24 +78,32 @@ void Executer::new_play_list(std::string a_playlist, std::string a_playlist_name
     std::vector<Song> play_list_vec;
     parse_songs(list_of_songs, play_list_vec);
 
-    //Retrive vector with urls
-    std::vector<std::string> url_vec;
-    get_url(play_list_vec, url_vec);
     
     //Save songs in db
     sent_to_db(play_list_vec, a_playlist_name);
     m_db.print_songs();
 
+    //Retrive vector with urls
+    std::vector<std::string> url_vec;
+    get_url(play_list_vec, url_vec);
+
     down_songs(play_list_vec ,url_vec );
 
 }
 
-void Executer::sent_to_db(std::vector<Song> a_songs, std::string a_name)
+void Executer::sent_to_db(std::vector<Song>& a_songs, std::string a_name)
 {
-    for (const auto& song : a_songs) {
-        m_db.add_song_to_playlist(song, a_name);
+    for (auto it = a_songs.begin(); it != a_songs.end();) {
+        if (m_db.is_song_exists(*it)) {
+            m_db.add_song_to_playlist(*it, a_name);
+            it = a_songs.erase(it); //Erase return the next iterator
+        } else {
+            m_db.add_song_to_playlist(*it, a_name);
+            ++it;
+        }
     }
 }
+
 
 void Executer::down_songs(std::vector<Song> a_songs, std::vector<std::string> a_urls)
 {
@@ -104,24 +112,32 @@ void Executer::down_songs(std::vector<Song> a_songs, std::vector<std::string> a_
         return;
     }
 
-    BlockingQueue<std::pair<std::string, std::string>> queue;
+    BlockingQueue<std::pair<Song, std::string>> queue;
 
     for (size_t i = 0; i < a_songs.size(); ++i) {
-        queue.enqueue(std::make_pair(a_songs[i].get_song_name()+ " - " +a_songs[i].get_artist_name() , a_urls[i]));
+        queue.enqueue(std::make_pair(a_songs[i] , a_urls[i]));
+    
 
     }
     create_songs_file();
-    size_t therad_count = 3; 
+    //size_t therad_count = std::thread::hardware_concurrency(); 
+    size_t therad_count = 3;
+    std::cout << therad_count << std::endl;
     //TODO function to get num of cores
 
     // Create a blocking queue to hold the songs
+    
     Poco::ThreadPool threadPool(therad_count);
-    auto worker_function = [&queue]() {
+    BlockingQueue<std::pair<Song, std::string>> song_n_lyrics_queue;
+
+    
+    auto worker_function = [&queue , &song_n_lyrics_queue]() {
         while (true) {
-            std::pair<std::string, std::string> song_and_url;
-            if(queue.dequeue(song_and_url)) {
-                std::cout << song_and_url.first  << std::endl;
-                download(song_and_url.second, song_and_url.first);
+            std::pair<Song, std::string> song_and_url;
+            if(queue.dequeue(song_and_url)) {                
+                download(song_and_url.second, song_and_url.first.get_search_name());
+                SongsController ctrl;
+                song_n_lyrics_queue.enqueue(std::make_pair(song_and_url.first,ctrl.get_lyrics(song_and_url.first.get_search_name())));
             } else {
                 break; 
             }
@@ -134,6 +150,13 @@ void Executer::down_songs(std::vector<Song> a_songs, std::vector<std::string> a_
     }
 
     threadPool.joinAll();
+
+
+
+    std::pair<Song , std::string> lyrics_pair;
+    while(song_n_lyrics_queue.dequeue(lyrics_pair)){
+        m_db.add_lyrics(lyrics_pair);
+    }
 }
 
 }//namespace m_player
