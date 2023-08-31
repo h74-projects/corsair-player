@@ -59,11 +59,8 @@ void Executer::parse_songs(const std::string& songs_string, std::vector<Song>& s
 void Executer::get_url(std::vector<Song>& play_list_vec, std::vector<std::string>& url_vec)
 {   
     SongsController ctrl; 
-    std::vector<std::string> name_and_art;
-    for (const auto& song : play_list_vec) {
-        name_and_art.emplace_back(song.get_search_name());
-    }
-    ctrl.get_songs_urls(url_vec, name_and_art);
+
+    ctrl.get_songs_urls(url_vec, play_list_vec , m_db);
 }
 
 
@@ -106,7 +103,8 @@ void Executer::sent_to_db(std::vector<Song>& a_songs, std::string a_name)
 
 
 void Executer::down_songs(std::vector<Song> a_songs, std::vector<std::string> a_urls)
-{
+{   
+    std::cout << " songs size " << a_songs.size() << " url size: " <<  a_urls.size() << std::endl;
     if (a_songs.size() != a_urls.size()) {
         std::cerr << "not possible downlaod list\n";
         return;
@@ -123,13 +121,9 @@ void Executer::down_songs(std::vector<Song> a_songs, std::vector<std::string> a_
     //size_t therad_count = std::thread::hardware_concurrency(); 
     size_t therad_count = 3;
     std::cout << therad_count << std::endl;
-    //TODO function to get num of cores
-
-    // Create a blocking queue to hold the songs
     
     Poco::ThreadPool threadPool(therad_count);
     BlockingQueue<std::pair<Song, std::string>> song_n_lyrics_queue;
-
     
     auto worker_function = [&queue , &song_n_lyrics_queue]() {
         while (true) {
@@ -146,7 +140,7 @@ void Executer::down_songs(std::vector<Song> a_songs, std::vector<std::string> a_
 
     for (size_t i = 0; i < therad_count; ++i) {
         std::shared_ptr<RunnableFunction> runnable = std::make_shared<RunnableFunction>(worker_function);
-        threadPool.start(*runnable); // Pass the MyRunnable instance by reference
+        threadPool.start(*runnable); 
     }
 
     threadPool.joinAll();
@@ -158,5 +152,7 @@ void Executer::down_songs(std::vector<Song> a_songs, std::vector<std::string> a_
         m_db.add_lyrics(lyrics_pair);
     }
 }
+
+
 
 }//namespace m_player

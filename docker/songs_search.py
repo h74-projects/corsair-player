@@ -7,7 +7,8 @@ import lyricsgenius
 app = Flask(__name__)
 
 # Replace with your actual ChatGPT API key
-openai.api_key = "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"
+#Put in local envirment
+openai.api_key = "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"
 
 # ChatGPT API endpoint
 CHATGPT_API_URL = "https://api.openai.com/v1/chat/completions"
@@ -74,7 +75,7 @@ def get_lyrics():
     if song:
         return jsonify({"lyrics": song.lyrics})
     else:
-         return jsonify({"lyrics": "Error"})
+         return jsonify({"lyrics": "Sorry - Lyrics not found"})
     
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

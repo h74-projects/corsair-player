@@ -298,8 +298,6 @@ void SqlMng::get_songs_by_condition(std::vector<Song>& a_found_songs, const std:
         std::string genre = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 4));
         std::string lyrics = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 5));
 
-
-
         a_found_songs.emplace_back(id ,song_name, song_artists, year, genre, lyrics);
     }
     if (rc != SQLITE_DONE) {
@@ -465,6 +463,77 @@ void SqlMng::add_lyrics(std::pair<Song , std::string> lyrics_pair)
     if (rc != SQLITE_DONE) {
         std::cerr << "Failed to execute insertion query: " << sqlite3_errmsg(m_db) << std::endl;
 
+    }
+}
+
+void SqlMng::get_playlists(std::vector<std::string>& a_playlists_res){
+        std::string sql = "SELECT * FROM playlist;";
+
+    sqlite3_stmt* stmt;
+    int rc = sqlite3_prepare_v2(m_db, sql.c_str(), -1, &stmt, nullptr);
+
+    if (rc != SQLITE_OK) {
+        std::cerr << "SQL error: " << sqlite3_errmsg(m_db) << std::endl;
+        sqlite3_close(m_db);
+        return;
+    }
+
+    while ((rc = sqlite3_step(stmt)) == SQLITE_ROW) {
+        const unsigned char* playlist_name = sqlite3_column_text(stmt, 1);
+        a_playlists_res.emplace_back(reinterpret_cast<const char*>(playlist_name));
+
+    }
+
+    if (rc != SQLITE_DONE) {
+        std::cerr << "SQL error: " << sqlite3_errmsg(m_db) << std::endl;
+    }
+    sqlite3_finalize(stmt);
+}
+
+
+void SqlMng::delete_song(const Song& song) {
+    std::string deleteFromPlaylistTable = "DELETE FROM songs_of_playlist WHERE song_id = (SELECT song_id FROM songs WHERE "
+        "song_name LIKE ? AND "
+        "artist LIKE ? AND "
+        "year LIKE ? AND "
+        "genre LIKE ?) ";
+    
+    sqlite3_stmt* playlistStmt;
+    if (sqlite3_prepare_v2(m_db, deleteFromPlaylistTable.c_str(), -1, &playlistStmt, nullptr) == SQLITE_OK) {
+        sqlite3_bind_text(playlistStmt, 1, song.get_song_name().c_str(), -1, SQLITE_TRANSIENT);
+        sqlite3_bind_text(playlistStmt, 2, song.get_artist_name().c_str(), -1, SQLITE_TRANSIENT);
+        sqlite3_bind_int(playlistStmt, 3, song.get_year());
+        sqlite3_bind_text(playlistStmt, 4, song.get_genre().c_str(), -1, SQLITE_TRANSIENT);
+
+        if (sqlite3_step(playlistStmt) != SQLITE_DONE) {
+            std::cerr << "SQL error: " << sqlite3_errmsg(m_db) << std::endl;
+        }
+
+        sqlite3_finalize(playlistStmt);
+    } else {
+        std::cerr << "SQL error: " << sqlite3_errmsg(m_db) << std::endl;
+    }
+
+    std::string deleteFromSongsTable = "DELETE FROM songs WHERE "
+        "song_name LIKE ? AND "
+        "artist LIKE ? AND "
+        "year LIKE ? AND "
+        "genre LIKE ? ";
+
+    sqlite3_stmt* songsStmt;
+    if (sqlite3_prepare_v2(m_db, deleteFromSongsTable.c_str(), -1, &songsStmt, nullptr) == SQLITE_OK) {
+        sqlite3_bind_text(songsStmt, 1, song.get_song_name().c_str(), -1, SQLITE_TRANSIENT);
+        sqlite3_bind_text(songsStmt, 2, song.get_artist_name().c_str(), -1, SQLITE_TRANSIENT);
+        sqlite3_bind_int(songsStmt, 3, song.get_year());
+        sqlite3_bind_text(songsStmt, 4, song.get_genre().c_str(), -1, SQLITE_TRANSIENT);
+
+        if (sqlite3_step(songsStmt) != SQLITE_DONE) {
+            std::cerr << "SQL error: " << sqlite3_errmsg(m_db) << std::endl;
+        }
+
+        sqlite3_finalize(songsStmt);
+    } else {
+        // Handle prepare error
     }
 }
 
