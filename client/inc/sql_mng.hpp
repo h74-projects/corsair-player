@@ -15,6 +15,8 @@ explicit SqlMng(const std::string&);
 ~SqlMng();
 
 void drop_tables();
+void delete_song(const Song& song);
+
 
 bool execute_statment(const std::string&);
 
@@ -32,8 +34,7 @@ bool is_song_exists(const Song& a_song);
 bool is_playlist_exists(std::string a_playlist);
 
 void add_lyrics(std::pair<Song , std::string> lyrics_pair);
-//TODO
-std::vector<std::string> get_playlists();
+void get_playlists(std::vector<std::string>& a_playlists_res);
 
 void print_songs();
 void print_song_of_playlists();

@@ -24,6 +24,8 @@ private:
     void parse_songs(const std::string& songs_string, std::vector<Song>& songs);
     void get_url(std::vector<Song>& play_list_vec, std::vector<std::string>& url_vec);
     void sent_to_db(std::vector<Song>& a_songs, std::string a_name);
+    void delete_song(const Song& song);
+
 
 };
 

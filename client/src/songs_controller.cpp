@@ -6,17 +6,18 @@ SongsController::SongsController()
 :m_client(U("http://localhost:5000")) 
 {}
 
-void SongsController::get_songs_urls(std::vector<std::string>& a_result, const std::vector<std::string>& queries) {
-    for (const auto& query : queries) {
+void SongsController::get_songs_urls(std::vector<std::string>& a_result, std::vector<Song>& queries,SqlMng& a_sql) {
+    auto it = queries.begin();
+    while (it != queries.end()) {
         web::http::uri_builder builder(U("/search"));
-        builder.append_query(U("q"), web::uri::encode_data_string(query));
+        builder.append_query(U("q"), web::uri::encode_data_string(it->get_search_name()));
 
         web::http::http_request request(web::http::methods::POST);
         request.headers().set_content_type(U("application/json"));
         request.set_request_uri(builder.to_uri());
 
         web::json::value json_data;
-        json_data[U("q")] = web::json::value::array({ web::json::value::string(utility::conversions::to_string_t(query)) });
+        json_data[U("q")] = web::json::value::array({ web::json::value::string(utility::conversions::to_string_t(it->get_search_name())) });
 
         request.set_body(json_data);
 
@@ -34,9 +35,23 @@ void SongsController::get_songs_urls(std::vector<std::string>& a_result, const s
             web::json::array video_links = json_response[U("video_links")].as_array();
             for (const auto& link : video_links) {
                 if (link.is_string()) {
-                    a_result.push_back(utility::conversions::to_utf8string(link.as_string()));
+                    std::string url = utility::conversions::to_utf8string(link.as_string());
+                    std::cout << url << std::endl;
+                    if(!url.empty()){
+                        a_result.push_back(utility::conversions::to_utf8string(link.as_string()));
+                        ++it;
+                    }else{
+                        a_sql.delete_song(*it);
+                        it =queries.erase(it);
+                    }
+                }else{
+                    a_sql.delete_song(*it);
+                    it = queries.erase(it);
                 }
             }
+        }else{
+            a_sql.delete_song(*it);
+            it = queries.erase(it);
         }
     }
 }
@@ -117,8 +132,13 @@ std::string SongsController::get_lyrics(const std::string& a_song_name) {
     if (response.status_code() == web::http::status_codes::OK) {
         web::json::value jsonResponse = response.extract_json().get();
         if (jsonResponse.has_field(U("lyrics"))) {
-            return jsonResponse[U("lyrics")].as_string();
-        } else {
+           std::string lyrics = jsonResponse[U("lyrics")].as_string();
+            if(!lyrics.empty()){
+                return lyrics;
+            }else{
+                return "Sorry - Lyrics not found";
+            }
+        }else{
             throw std::runtime_error("Response field 'lyrics' not found in JSON.");
         }
     } else {
