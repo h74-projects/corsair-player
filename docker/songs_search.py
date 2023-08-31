@@ -8,7 +8,7 @@ app = Flask(__name__)
 
 # Replace with your actual ChatGPT API key
 #Put in local envirment
-openai.api_key = "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"
+openai.api_key = "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"
 
 # ChatGPT API endpoint
 CHATGPT_API_URL = "https://api.openai.com/v1/chat/completions"
